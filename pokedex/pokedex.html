@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,7 +17,7 @@
         }
 
         header {
-            background-color: #3498db;
+            background-color: black;
             color: #fff;
             text-align: center;
             padding: 10px;
@@ -42,6 +43,55 @@
             flex-direction: column;
         }
 
+        .fire-type {
+            border: 2px solid red;
+            background-color: red;
+        }
+        .grass-type, .bug-type {
+            border: 2px solid green;
+            background-color: green;
+        }
+        .water-type, .ice-type {
+            border: 2px solid blue;
+            background-color: blue;
+        }
+        .normal-type {
+            border: 2px solid white;
+            background-color: white;
+        }
+        .psychic-type {
+            border: 2px solid yellowgreen;
+            background-color: yellowgreen;
+        }
+        .fighting-type {
+            border: 2px solid pink;
+            background-color: pink;
+        }
+        .rock-type, .dragon-type {
+            border: 2px solid grey;
+            background-color: grey;
+        }
+        .electric-type {
+            border: 2px solid yellow;
+            background-color: yellow;
+        }
+        .poison-type {
+            border: 2px solid purple;
+            background-color: purple;
+        }
+        .ground-type {
+            border: 2px solid brown;
+            background-color: brown;
+        }
+        .fairy-type {
+            border: 2px solid palevioletred;
+            background-color: palevioletred;
+        }
+        .ghost-type {
+            border: 2px solid purple;
+            background-color: purple;
+        }
+
         footer {
             background-color: #3498db;
             color: #fff;
@@ -51,104 +101,111 @@
         }
     </style>
 </head>
+
 <body>
 
-<header>
-    <button id="btnVoltarPage">Voltar pagina</button>
-    <button id="btnProximaPage">Proxima pagina</button>
-    <button id="btnPokedex">Pokedex</button>
+    <header>
+        <button id="btnVoltarPage">Voltar pagina</button>
+        <button id="btnProximaPage">Proxima pagina</button>
+        <button id="btnPokedex">Pokedex</button>
 
-    <div id="status"></div>
-    <div id="lista"></div>
-</header>
+        <div id="status"></div>
+        <div id="lista"></div>
+    </header>
 
-<script>
-    let offset = 0;
-    const pokedex = loadPokedex();
+    <script>
+        let offset = 0;
+        const pokedex = loadPokedex();
 
-    document.getElementById("btnProximaPage").onclick = function () {
-        offset += 30;
-        loadPokemonList();
-    };
-
-    document.getElementById("btnVoltarPage").onclick = function () {
-        if (offset != 0) {
-            offset -= 30;
+        document.getElementById("btnProximaPage").onclick = function () {
+            offset += 30;
             loadPokemonList();
+        };
+
+        document.getElementById("btnVoltarPage").onclick = function () {
+            if (offset != 0) {
+                offset -= 30;
+                loadPokemonList();
+            }
+        };
+
+        document.getElementById("btnPokedex").onclick = function () {
+            savePokedex(pokedex);
+            window.location.href = "pokedexx.html";
+        };
+
+        loadPokemonList();
+
+        function loadPokemonList() {
+            fetch(`https://pokeapi.co/api/v2/pokemon?limit=30&offset=${offset}`)
+                .then(response => response.json())
+                .then(function (data) {
+                    let lista = document.getElementById('lista');
+                    lista.innerHTML = "";
+
+                    if (data.results) {
+                        data.results.forEach(function (pokemon) {
+                            fetch(pokemon.url)
+                                .then(response => response.json())
+                                .then(function (pokemonData) {
+                                    const pokemonCard = document.createElement('div');
+                                    pokemonCard.className = 'pokemon-card';
+                                    
+                                    console.log(pokemonData.types[0].type);
+                                    pokemonCard.classList.add(pokemonData.types[0].type.name + "-type");
+
+                                 
+
+                                    const pokemonImg = document.createElement('img');
+                                    pokemonImg.src = pokemonData.sprites.back_default;
+
+                                    pokemonCard.appendChild(pokemonImg);
+                                    pokemonCard.innerHTML += `<p>${pokemonData.name}</p>`;
+
+                                    const addButton = document.createElement('button');
+                                    addButton.innerText = 'Adicionar';
+
+                                    addButton.addEventListener('click', function () {
+                                        addPokemonToPokedex(pokemonData);
+                                        lista.removeChild(pokemonCard);
+                                    });
+
+                                    const detailsButton = document.createElement('button');
+                                    detailsButton.innerText = 'Ver Detalhes';
+
+                                    detailsButton.addEventListener('click', function () {
+                                        showDetails(pokemonData);
+                                    });
+
+                                    pokemonCard.appendChild(addButton);
+                                    pokemonCard.appendChild(detailsButton);
+                                    lista.appendChild(pokemonCard);
+                                });
+                        });
+                    }
+                });
         }
-    };
 
-    document.getElementById("btnPokedex").onclick = function () {
-        savePokedex(pokedex);
-        window.location.href = "pokedexx.html";
-    };
+        function addPokemonToPokedex(pokemon) {
+            pokedex.push(pokemon);
+            console.log(`${pokemon.name} adicionado à pokedex!`);
+            savePokedex(pokedex);
+        }
 
-    // Carregar a lista de Pokémon ao carregar a página
-    loadPokemonList();
+        function showDetails(pokemon) {
+            const abilitiesString = pokemon.abilities.map(ability => ability.ability.name).join(", ");
+            alert(`Detalhes do Pokémon:\nNome: ${pokemon.name}\nAltura: ${pokemon.height}\nPeso: ${pokemon.weight}\nHabilidades: ${abilitiesString}`);
+        }
 
-    function loadPokemonList() {
-        fetch(`https://pokeapi.co/api/v2/pokemon?limit=30&offset=${offset}`)
-            .then(response => response.json())
-            .then(function (data) {
-                let lista = document.getElementById('lista');
-                lista.innerHTML = "";
+        function loadPokedex() {
+            const storedPokedex = JSON.parse(localStorage.getItem("pokemons")) || [];
+            return storedPokedex;
+        }
 
-                if (data.results) {
-                    data.results.forEach(function (pokemon) {
-                        fetch(pokemon.url)
-                            .then(response => response.json())
-                            .then(function (pokemonData) {
-                                const pokemonCard = document.createElement('div');
-                                pokemonCard.className = 'pokemon-card';
-
-                                const pokemonImg = document.createElement('img');
-                                pokemonImg.src = pokemonData.sprites.back_default;
-
-                                pokemonCard.appendChild(pokemonImg);
-                                pokemonCard.innerHTML += `<p>${pokemonData.name}</p>`;
-
-                                const addButton = document.createElement('button');
-                                addButton.innerText = 'Adicionar';
-
-                                addButton.addEventListener('click', function () {
-                                    addPokemonToPokedex(pokemonData);
-                                });
-
-                                const detailsButton = document.createElement('button');
-                                detailsButton.innerText = 'Ver Detalhes';
-
-                                detailsButton.addEventListener('click', function () {
-                                    showDetails(pokemonData);
-                                });
-
-                                pokemonCard.appendChild(addButton);
-                                pokemonCard.appendChild(detailsButton);
-                                lista.appendChild(pokemonCard);
-                            });
-                    });
-                }
-            });
-    }
-
-    function addPokemonToPokedex(pokemon) {
-        pokedex.push(pokemon);
-        console.log(`${pokemon.name} adicionado à pokedex!`);
-        savePokedex(pokedex);
-    }
-
-    function showDetails(pokemon) {
-    const abilitiesString = pokemon.abilities.map(ability => ability.ability.name).join(", ");
-    alert(`Detalhes do Pokémon:\nNome: ${pokemon.name}\nAltura: ${pokemon.height}\nPeso: ${pokemon.weight}\nHabilidades: ${abilitiesString}`);
-}
-
-    function loadPokedex() {
-        const storedPokedex = JSON.parse(localStorage.getItem("pokemons")) || [];
-        return storedPokedex;
-    }
-
-    function savePokedex(pokedexToSave) {
-        localStorage.setItem("pokemons", JSON.stringify(pokedexToSave));
-    }
-</script>
+        function savePokedex(pokedexToSave) {
+            localStorage.setItem("pokemons", JSON.stringify(pokedexToSave));
+        }
+    </script>
 </body>
+
 </html>
