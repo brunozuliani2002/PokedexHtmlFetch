@@ -99,6 +99,36 @@
             padding: 10px;
             width: 100%;
         }
+        /* Adicione este trecho ao seu estilo CSS existente */
+       
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #fefefe;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
     </style>
 </head>
 
@@ -150,11 +180,8 @@
                                 .then(function (pokemonData) {
                                     const pokemonCard = document.createElement('div');
                                     pokemonCard.className = 'pokemon-card';
-                                    
-                                    console.log(pokemonData.types[0].type);
-                                    pokemonCard.classList.add(pokemonData.types[0].type.name + "-type");
 
-                                 
+                                    pokemonCard.classList.add(pokemonData.types[0].type.name + "-type");
 
                                     const pokemonImg = document.createElement('img');
                                     pokemonImg.src = pokemonData.sprites.back_default;
@@ -194,7 +221,21 @@
 
         function showDetails(pokemon) {
             const abilitiesString = pokemon.abilities.map(ability => ability.ability.name).join(", ");
-            alert(`Detalhes do Pokémon:\nNome: ${pokemon.name}\nAltura: ${pokemon.height}\nPeso: ${pokemon.weight}\nHabilidades: ${abilitiesString}`);
+
+            document.getElementById('modalPokemonName').innerText = `Nome: ${pokemon.name}`;
+            document.getElementById('modalPokemonHeight').innerText = `Altura: ${pokemon.height}`;
+            document.getElementById('modalPokemonWeight').innerText = `Peso: ${pokemon.weight}`;
+            document.getElementById('modalPokemonAbilities').innerText = `Habilidades: ${abilitiesString}`;
+
+            const modalPokemonImage = document.getElementById('modalPokemonImage');
+            modalPokemonImage.src = pokemon.sprites.back_default;
+            modalPokemonImage.alt = `Imagem de ${pokemon.name}`;
+
+            document.getElementById('pokemonModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('pokemonModal').style.display = 'none';
         }
 
         function loadPokedex() {
@@ -206,6 +247,18 @@
             localStorage.setItem("pokemons", JSON.stringify(pokedexToSave));
         }
     </script>
+
+    <!-- Atualize o HTML do modal no seu HTML principal -->
+    <div id="pokemonModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h1 id="modalPokemonName"></h1>
+            <img id="modalPokemonImage" src="" alt="Imagem do Pokémon">
+            <p id="modalPokemonHeight"></p>
+            <p id="modalPokemonWeight"></p>
+            <p id="modalPokemonAbilities"></p>
+        </div>
+    </div>
 </body>
 
 </html>
