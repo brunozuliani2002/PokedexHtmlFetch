@@ -4,141 +4,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="pokedex.css">
     <title>Sua Tela</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        header {
-            background-color: black;
-            color: #fff;
-            text-align: center;
-            padding: 10px;
-            width: 100%;
-        }
-
-        #lista {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        #pokedex {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .pokemon-card {
-            margin: 10px;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .fire-type {
-            border: 2px solid red;
-            background-color: red;
-        }
-        .grass-type, .bug-type {
-            border: 2px solid green;
-            background-color: green;
-        }
-        .water-type, .ice-type {
-            border: 2px solid blue;
-            background-color: blue;
-        }
-        .normal-type {
-            border: 2px solid white;
-            background-color: white;
-        }
-        .psychic-type {
-            border: 2px solid yellowgreen;
-            background-color: yellowgreen;
-        }
-        .fighting-type {
-            border: 2px solid pink;
-            background-color: pink;
-        }
-        .rock-type, .dragon-type {
-            border: 2px solid grey;
-            background-color: grey;
-        }
-        .electric-type {
-            border: 2px solid yellow;
-            background-color: yellow;
-        }
-        .poison-type {
-            border: 2px solid purple;
-            background-color: purple;
-        }
-        .ground-type {
-            border: 2px solid brown;
-            background-color: brown;
-        }
-        .fairy-type {
-            border: 2px solid palevioletred;
-            background-color: palevioletred;
-        }
-        .ghost-type {
-            border: 2px solid purple;
-            background-color: purple;
-        }
-
-        footer {
-            background-color: #3498db;
-            color: #fff;
-            text-align: center;
-            padding: 10px;
-            width: 100%;
-        }
-        /* Adicione este trecho ao seu estilo CSS existente */
-       
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-        }
-
-        .modal-content {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: #fefefe;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-        }
-
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-    </style>
 </head>
 
 <body>
-
     <header>
         <button id="btnVoltarPage">Voltar pagina</button>
         <button id="btnProximaPage">Proxima pagina</button>
         <button id="btnPokedex">Pokedex</button>
-
         <div id="status"></div>
         <div id="lista"></div>
     </header>
@@ -146,6 +20,7 @@
     <script>
         let offset = 0;
         const pokedex = loadPokedex();
+        let comparedPokemons = [];
 
         document.getElementById("btnProximaPage").onclick = function () {
             offset += 30;
@@ -204,8 +79,16 @@
                                         showDetails(pokemonData);
                                     });
 
+                                    const compareButton = document.createElement('button');
+                                    compareButton.innerText = 'Duelo';
+
+                                    compareButton.addEventListener('click', function () {
+                                        comparePokemon(pokemonData);
+                                    });
+
                                     pokemonCard.appendChild(addButton);
                                     pokemonCard.appendChild(detailsButton);
+                                    pokemonCard.appendChild(compareButton);
                                     lista.appendChild(pokemonCard);
                                 });
                         });
@@ -219,20 +102,103 @@
             savePokedex(pokedex);
         }
 
-        function showDetails(pokemon) {
-            const abilitiesString = pokemon.abilities.map(ability => ability.ability.name).join(", ");
+        function comparePokemon(selectedPokemon) {
+            const statsSumSelected = calculateStatsSum(selectedPokemon.stats);
 
-            document.getElementById('modalPokemonName').innerText = `Nome: ${pokemon.name}`;
-            document.getElementById('modalPokemonHeight').innerText = `Altura: ${pokemon.height}`;
-            document.getElementById('modalPokemonWeight').innerText = `Peso: ${pokemon.weight}`;
-            document.getElementById('modalPokemonAbilities').innerText = `Habilidades: ${abilitiesString}`;
+            const secondPokemonName = prompt('Digite o nome do segundo Pokémon para o duelo:');
+            fetch(`https://pokeapi.co/api/v2/pokemon/${secondPokemonName.toLowerCase()}`)
+                .then(response => response.json())
+                .then(function (secondPokemonData) {
+                    const statsSumSecond = calculateStatsSum(secondPokemonData.stats);
 
+                    const winner = determineWinner(selectedPokemon, statsSumSelected, secondPokemonData, statsSumSecond);
+
+                    showWinnerModal(selectedPokemon, secondPokemonData, winner);
+                })
+                .catch(error => {
+                    console.error('Erro ao buscar o segundo Pokémon:', error);
+                    document.getElementById('victoryMessage').innerText = 'Erro ao buscar o segundo Pokémon.';
+                });
+        }
+
+        function determineWinner(firstPokemon, firstStatsSum, secondPokemon, secondStatsSum) {
+            if (firstStatsSum > secondStatsSum) {
+                return firstPokemon;
+            } else if (firstStatsSum < secondStatsSum) {
+                return secondPokemon;
+            } else {
+                return null; // Empate
+            }
+        }
+
+        function showWinnerModal(firstPokemon, secondPokemon, winner) {
+            const modalPokemonName = document.getElementById('modalPokemonName');
             const modalPokemonImage = document.getElementById('modalPokemonImage');
-            modalPokemonImage.src = pokemon.sprites.back_default;
-            modalPokemonImage.alt = `Imagem de ${pokemon.name}`;
+            const modalPokemonHeight = document.getElementById('modalPokemonHeight');
+            const modalPokemonWeight = document.getElementById('modalPokemonWeight');
+            const modalPokemonAbilities = document.getElementById('modalPokemonAbilities');
+            const addButtonPokedex = document.createElement('button');
+
+            if (winner) {
+                const winnerPokemon = determineWinner(firstPokemon, calculateStatsSum(firstPokemon.stats), secondPokemon, calculateStatsSum(secondPokemon.stats));
+
+                modalPokemonName.innerText = `Vencedor: ${winnerPokemon.name}`;
+                modalPokemonImage.src = winnerPokemon.sprites.back_default;
+                modalPokemonHeight.innerText = `Altura: ${winnerPokemon.height}`;
+                modalPokemonWeight.innerText = `Peso: ${winnerPokemon.weight}`;
+                const abilitiesString = winnerPokemon.abilities.map(ability => ability.ability.name).join(", ");
+                modalPokemonAbilities.innerText = `Habilidades: ${abilitiesString}`;
+                addButtonPokedex.innerText = 'Adicionar à Pokedex';
+
+                addButtonPokedex.addEventListener('click', function () {
+                    addPokemonToPokedex(winnerPokemon);
+                    closeModal(); // Fechar o modal após adicionar à Pokedex
+                });
+            } else {
+                modalPokemonName.innerText = 'Empate!';
+                modalPokemonImage.src = ''; // Limpa a imagem em caso de empate
+                modalPokemonHeight.innerText = '';
+                modalPokemonWeight.innerText = '';
+                modalPokemonAbilities.innerText = '';
+                addButtonPokedex.innerText = ''; // Remove o botão em caso de empate
+            }
+
+            const modalContent = document.querySelector('.modal-content');
+            modalContent.appendChild(addButtonPokedex);
 
             document.getElementById('pokemonModal').style.display = 'block';
         }
+
+        function showDetails(pokemon) {
+    const abilitiesString = pokemon.abilities.map(ability => ability.ability.name).join(", ");
+
+    document.getElementById('modalPokemonName').innerText = `Nome: ${pokemon.name}`;
+    document.getElementById('modalPokemonHeight').innerText = `Altura: ${pokemon.height}`;
+    document.getElementById('modalPokemonWeight').innerText = `Peso: ${pokemon.weight}`;
+    document.getElementById('modalPokemonAbilities').innerText = `Habilidades: ${abilitiesString}`;
+
+    const modalPokemonImage = document.getElementById('modalPokemonImage');
+    modalPokemonImage.src = pokemon.sprites.back_default;
+    modalPokemonImage.alt = `Imagem de ${pokemon.name}`;
+
+    // Verifica se o botão já existe antes de criar um novo
+    const existingButton = document.getElementById('addToPokedexButton');
+    if (!existingButton) {
+        const addButtonPokedex = document.createElement('button');
+        addButtonPokedex.id = 'addToPokedexButton';
+        addButtonPokedex.innerText = 'Adicionar à Pokedex';
+        addButtonPokedex.addEventListener('click', function () {
+            addPokemonToPokedex(pokemon);
+            closeModal(); // Fechar o modal após adicionar à Pokedex
+        });
+
+        const modalContent = document.querySelector('.modal-content');
+        modalContent.appendChild(addButtonPokedex);
+    }
+
+    document.getElementById('pokemonModal').style.display = 'block';
+}
+
 
         function closeModal() {
             document.getElementById('pokemonModal').style.display = 'none';
@@ -245,6 +211,10 @@
 
         function savePokedex(pokedexToSave) {
             localStorage.setItem("pokemons", JSON.stringify(pokedexToSave));
+        }
+
+        function calculateStatsSum(stats) {
+            return stats.reduce((sum, stat) => sum + stat.base_stat, 0);
         }
     </script>
 
