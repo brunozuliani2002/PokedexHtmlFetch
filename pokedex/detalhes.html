@@ -1,0 +1,67 @@
+<!-- detalhes.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalhes do Pokémon</title>
+    <style>
+        /* Adicione este estilo ao seu cabeçalho ou arquivo de estilo CSS */
+#header {
+    background-color: #3498db;
+    color: #fff;
+    text-align: center;
+    padding: 10px;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#backButton,
+#pokedexButton {
+    background-color: #2c3e50;
+    color: #fff;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#pokedexButton {
+    margin-left: auto; /* Mover o botão para a direita */
+}
+
+    </style>
+</head>
+
+<body>
+    <div id="header">
+        <button id="backButton" onclick="goBack()">Voltar</button>
+        <button id="pokedexButton" onclick="togglePokedex()">Adicionar/Remover da Pokedex</button>
+    </div>
+
+    <div id="detailsContainer">
+        <h1 id="pokemonName"></h1>
+        <p id="pokemonHeight"></p>
+        <p id="pokemonWeight"></p>
+        <p id="pokemonAbilities"></p>
+    </div>
+
+    <script>
+        // Adicione um script para obter e exibir os detalhes do Pokémon
+        const urlParams = new URLSearchParams(window.location.search);
+        const pokemonName = urlParams.get('name');
+        const pokemonHeight = urlParams.get('height');
+        const pokemonWeight = urlParams.get('weight');
+        const pokemonAbilities = urlParams.get('abilities');
+
+        document.getElementById('pokemonName').innerText = `Nome: ${pokemonName}`;
+        document.getElementById('pokemonHeight').innerText = `Altura: ${pokemonHeight}`;
+        document.getElementById('pokemonWeight').innerText = `Peso: ${pokemonWeight}`;
+        document.getElementById('pokemonAbilities').innerText = `Habilidades: ${pokemonAbilities}`;
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokédex</title>
+    <style>
+       body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #pokedexContainer {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around; 
+        }
+
+        .pokemon-card {
+            border: 1px solid #ddd;
+            margin: 10px;
+            padding: 10px;
+            text-align: center;
+            width: 200px; 
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Pokédex</h1>
+    <button id="btnVoltar">Voltar</button>
+    <button id="btnLimpar">Limpar Pokedex</button>
+    <div id="pokedexContainer"></div>
+
+    <script>
+        const pokedex = JSON.parse(localStorage.getItem("pokemons")) || [];
+        const pokedexContainer = document.getElementById("pokedexContainer");
+
+        pokedex.forEach(function (pokemon) {
+            const pokemonCard = document.createElement("div");
+            pokemonCard.className = 'pokemon-card';
+
+            const pokemonImg = document.createElement("img");
+            pokemonImg.src = pokemon.sprites.front_default;
+
+            pokemonCard.appendChild(pokemonImg);
+            pokemonCard.innerHTML += `<p>${pokemon.name}</p>`;
+
+            const abilitiesList = document.createElement("ul");
+            pokemon.abilities.forEach(function (ability) {
+                const abilityItem = document.createElement("li");
+                abilityItem.textContent = ability.ability.name;
+                abilitiesList.appendChild(abilityItem);
+            });
+            pokemonCard.appendChild(abilitiesList);
+
+            pokedexContainer.appendChild(pokemonCard);
+        });
+
+        document.getElementById("btnVoltar").onclick = function () {
+            localStorage.setItem("pokemons", JSON.stringify(pokedex));
+            window.location.href = "pokedex.html";
+        };
+
+        document.getElementById("btnLimpar").onclick = function () {
+            localStorage.removeItem("pokemons");
+            location.reload(); 
+        };
+    </script>
+
+</body>
+</html>
